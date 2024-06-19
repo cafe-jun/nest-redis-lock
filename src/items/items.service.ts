@@ -13,20 +13,20 @@ export class ItemsService {
 
   async increaseLikeMutex(inputCount: number): Promise<void> {
     const release = await lock(this.redis, 'like', { fifo: true });
-    const count = await this.redis.get('LIKE');
-    const total = +count + inputCount;
+    const count = await this.findLike();
+    const total = count + inputCount;
     await this.redis.set('LIKE', total);
     await release();
   }
 
   async increaseSimpleLike(inputCount: number): Promise<void> {
-    const count = await this.redis.get('LIKE');
-    const total = Number.parseInt(count) + inputCount;
+    const count = await this.findLike();
+    const total = count + inputCount;
     await this.redis.set('LIKE', total);
   }
 
   async findLike(): Promise<number> {
     const like = await this.redis.get('LIKE');
-    return Number.parseInt(like);
+    return like ? Number.parseInt(like) : 0;
   }
 }
